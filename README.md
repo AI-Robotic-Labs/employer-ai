@@ -25,7 +25,7 @@
 ├── shiftbot.py             # Main Python script
 ├── shiftbot_data.txt       # Persistent storage of shift and schedule data
 ├── employees.txt           # Batch file to pre-load employees and schedules
-└── relatorio.txt           # Generated weekly report
+└── report.txt           # Generated weekly report
 ```
 
 ---
