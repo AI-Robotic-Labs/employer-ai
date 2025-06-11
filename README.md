@@ -1,8 +1,6 @@
 # 🕒 ShiftBot – Employee Shift Manager
 
 **ShiftBot** is a simple, in-memory Python tool to manage employee schedules and shifts, supporting weekly planning, shift registration, auto-logging based on weekly schedule, conflict detection, and report generation.
-Originally developed in Portuguese, now fully translated into English.
-
 ---
 
 ## 📦 Features
