@@ -13,6 +13,7 @@
 * Generate weekly total hours worked per employee in a report file.
 * Load initial data from batch files.
 * Save and persist employee data between runs.
+* Works offiline
 
 ---
 
