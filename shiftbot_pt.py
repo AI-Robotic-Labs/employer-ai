@@ -4,17 +4,17 @@ import os
 # Current date (February 25, 2025, a Tuesday)
 TODAY = datetime.date(2025, 2, 25)
 WEEKDAY_MAP = {
-    0: "Segunda-feira", 1: "Terça-feira", 2: "Quarta-feira", 3: "Quinta-feira",
-    4: "Sexta-feira", 5: "Sábado", 6: "Domingo"
+    0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday",
+    4: "Friday", 5: "Saturday", 6: "Sunday"
 }
 
 # In-memory data structure
 employees = {}
 
-# Days of the week in Portuguese
+# Days of the week in English
 DAYS_OF_WEEK = {
-    "segunda-feira": "Segunda-feira", "terça-feira": "Terça-feira", "quarta-feira": "Quarta-feira",
-    "quinta-feira": "Quinta-feira", "sexta-feira": "Sexta-feira", "sábado": "Sábado", "domingo": "Domingo"
+    "monday": "Monday", "tuesday": "Tuesday", "wednesday": "Wednesday",
+    "thursday": "Thursday", "friday": "Friday", "saturday": "Saturday", "sunday": "Sunday"
 }
 
 # Helper function to calculate hours
@@ -67,18 +67,18 @@ def load_batch_data():
         with open("employees.txt", "r", encoding="utf-8") as f:
             for line in f:
                 parts = line.strip().split("|")
-                if len(parts) == 3 and parts[0] == "funcionário":
+                if len(parts) == 3 and parts[0] == "employee":
                     emp_id, name = parts[1], parts[2]
                     if emp_id not in employees:
                         employees[emp_id] = {"name": name, "schedule": {}, "shifts": {}}
-                        print(f"Funcionário importado: {name} ({emp_id})")
-                elif len(parts) == 4 and parts[0] == "horário":
+                        print(f"Employee imported: {name} ({emp_id})")
+                elif len(parts) == 4 and parts[0] == "schedule":
                     emp_id, day, time = parts[1], parts[2].capitalize(), parts[3]
                     if emp_id in employees:
                         employees[emp_id]["schedule"][day] = time
-                        print(f"Horário importado para {emp_id}: {day} {time}")
+                        print(f"Schedule imported for {emp_id}: {day} {time}")
     except FileNotFoundError:
-        print("Arquivo employees.txt não encontrado. Continuando sem importação.")
+        print("File employees.txt not found. Continuing without importing.")
 
 # Save data to file
 def save_data():
@@ -97,33 +97,33 @@ def auto_log_shifts():
     for emp_id, data in employees.items():
         if today_day in data["schedule"]:
             if today_str in data["shifts"]:
-                print(f"Conflito detectado para {data['name']} em {today_str}: Turno existente {data['shifts'][today_str]['start']}-{data['shifts'][today_str]['end']}. Use 'editar' para alterar.")
+                print(f"Conflict detected for {data['name']} on {today_str}: Existing shift {data['shifts'][today_str]['start']}-{data['shifts'][today_str]['end']}. Use 'edit' to modify.")
             else:
                 start, end = data["schedule"][today_day].split("-")
                 hours = calculate_hours(start, end)
                 employees[emp_id]["shifts"][today_str] = {"start": start, "end": end, "hours": hours}
-                print(f"Turno automático registrado para {data['name']} em {today_str}: {start}-{end} ({hours} horas)")
+                print(f"Automatic shift logged for {data['name']} on {today_str}: {start}-{end} ({hours} hours)")
 
 # Generate weekly report
 def generate_weekly_report():
-    start_date = TODAY - datetime.timedelta(days=6)  # 7-day range
+    start_date = TODAY - datetime.timedelta(days=6)
     start_str = start_date.strftime("%Y-%m-%d")
     end_str = TODAY.strftime("%Y-%m-%d")
-    with open("relatorio.txt", "w", encoding="utf-8") as f:
-        f.write(f"Relatório Semanal: {start_date.strftime('%d-%m-%Y')} a {TODAY.strftime('%d-%m-%Y')}\n")
+    with open("report.txt", "w", encoding="utf-8") as f:
+        f.write(f"Weekly Report: {start_date.strftime('%d-%m-%Y')} to {TODAY.strftime('%d-%m-%Y')}\n")
         f.write("-" * 50 + "\n")
         for emp_id, data in employees.items():
             total = sum(shift["hours"] for date, shift in data["shifts"].items() if start_str <= date <= end_str)
-            f.write(f"{data['name']} ({emp_id}): {total} horas\n")
-    print("Relatório semanal gerado em relatorio.txt")
+            f.write(f"{data['name']} ({emp_id}): {total} hours\n")
+    print("Weekly report generated in report.txt")
 
 # Main command loop
 def main():
     load_data()
     load_batch_data()
     auto_log_shifts()
-    print("Bem-vindo ao ShiftBot - Gerenciador de Funcionários")
-    print("Digite 'ajuda' para ver os comandos.")
+    print("Welcome to ShiftBot - Employee Manager")
+    print("Type 'help' to see available commands.")
 
     while True:
         cmd = input("> ").strip().lower()
@@ -132,112 +132,55 @@ def main():
         if not parts:
             continue
 
-        if parts[0] == "ajuda":
+        if parts[0] == "help":
             print("""
-Comandos:
-- adicionar <nome> <id> : Adicionar um funcionário (ex.: adicionar "João Silva" E001)
-- horário <id> <dia> <início-fim> : Definir horário semanal (ex.: horário E001 Segunda-feira 9:00-17:00)
-- turno <id> <data> <início> <fim> : Registrar turno (ex.: turno E001 25-02-2025 9:00 17:00)
-- horas <id> <data_início> <data_fim> : Mostrar horas totais (ex.: horas E001 20-02-2025 25-02-2025)
-- editar <id> <data> <início> <fim> : Editar turno (ex.: editar E001 25-02-2025 9:30 17:00)
-- listar : Mostrar todos os funcionários
-- auto : Executar registro automático de turnos para hoje
-- sair : Sair, salvar dados e gerar relatório
+Commands:
+- add <name> <id> : Add an employee (e.g.: add "John Smith" E001)
+- schedule <id> <day> <start-end> : Set weekly schedule (e.g.: schedule E001 Monday 9:00-17:00)
+- shift <id> <date> <start> <end> : Register shift (e.g.: shift E001 25-02-2025 9:00 17:00)
+- hours <id> <start_date> <end_date> : Show total hours (e.g.: hours E001 20-02-2025 25-02-2025)
+- edit <id> <date> <start> <end> : Edit shift (e.g.: edit E001 25-02-2025 9:30 17:00)
+- list : Show all employees
+- auto : Run automatic shift logging for today
+- exit : Exit, save data and generate report
             """)
 
-        elif parts[0] == "adicionar" and len(parts) >= 3:
+        elif parts[0] == "add" and len(parts) >= 3:
             emp_id = parts[-1]
             name = " ".join(parts[1:-1]).strip('"')
             if emp_id in employees:
-                print(f"Erro: Funcionário {emp_id} já existe.")
+                print(f"Error: Employee {emp_id} already exists.")
             else:
                 employees[emp_id] = {"name": name, "schedule": {}, "shifts": {}}
-                print(f"Funcionário adicionado: {name} ({emp_id})")
+                print(f"Employee added: {name} ({emp_id})")
 
-        elif parts[0] == "horário" and len(parts) == 4:
+        elif parts[0] == "schedule" and len(parts) == 4:
             emp_id, day, time = parts[1], parts[2].capitalize(), parts[3]
             if emp_id not in employees:
-                print(f"Erro: Funcionário {emp_id} não encontrado.")
+                print(f"Error: Employee {emp_id} not found.")
             elif day not in DAYS_OF_WEEK.values():
-                print("Erro: Dia da semana inválido. Use Segunda-feira, Terça-feira, etc.")
+                print("Error: Invalid day. Use Monday, Tuesday, etc.")
             elif "-" not in time:
-                print("Erro: Formato de horário deve ser início-fim (ex.: 9:00-17:00)")
+                print("Error: Time format must be start-end (e.g.: 9:00-17:00)")
             else:
                 employees[emp_id]["schedule"][day] = time
-                print(f"Horário de {day} definido para {employees[emp_id]['name']}: {time}")
+                print(f"Schedule for {day} set for {employees[emp_id]['name']}: {time}")
 
-        elif parts[0] == "turno" and len(parts) == 5:
+        elif parts[0] == "shift" and len(parts) == 5:
             emp_id, date, start, end = parts[1], parts[2], parts[3], parts[4]
             if emp_id not in employees:
-                print(f"Erro: Funcionário {emp_id} não encontrado.")
+                print(f"Error: Employee {emp_id} not found.")
             elif not valid_date(date):
-                print("Erro: Data inválida ou posterior a hoje (25-02-2025).")
+                print("Error: Invalid or future date (25-02-2025 is the limit).")
             else:
                 internal_date = convert_date(date)
                 if internal_date in employees[emp_id]["shifts"]:
-                    print(f"Conflito detectado: Turno existente em {date}: {employees[emp_id]['shifts'][internal_date]['start']}-{employees[emp_id]['shifts'][internal_date]['end']}. Use 'editar' para alterar.")
+                    print(f"Conflict: Existing shift on {date}: {employees[emp_id]['shifts'][internal_date]['start']}-{employees[emp_id]['shifts'][internal_date]['end']}. Use 'edit' to modify.")
                 else:
                     try:
                         hours = calculate_hours(start, end)
                         if hours <= 0:
-                            print("Erro: Horário de fim deve ser após o início.")
+                            print("Error: End time must be after start time.")
                         else:
                             employees[emp_id]["shifts"][internal_date] = {"start": start, "end": end, "hours": hours}
-                            print(f"Turno registrado para {employees[emp_id]['name']} em {date}: {start}-{end} ({hours} horas)")
-                    except:
-                        print("Erro: Formato de horário inválido (use HH:MM ou HHhMM, ex.: 9:00).")
-
-        elif parts[0] == "horas" and len(parts) == 4:
-            emp_id, start_date, end_date = parts[1], parts[2], parts[3]
-            if emp_id not in employees:
-                print(f"Erro: Funcionário {emp_id} não encontrado.")
-            elif not (valid_date(start_date) and valid_date(end_date)):
-                print("Erro: Intervalo de datas inválido.")
-            else:
-                start_internal = convert_date(start_date)
-                end_internal = convert_date(end_date)
-                total = sum(shift["hours"] for date, shift in employees[emp_id]["shifts"].items()
-                            if start_internal <= date <= end_internal)
-                print(f"{employees[emp_id]['name']} trabalhou {total} horas de {start_date} a {end_date}")
-
-        elif parts[0] == "editar" and len(parts) == 5:
-            emp_id, date, start, end = parts[1], parts[2], parts[3], parts[4]
-            if emp_id not in employees:
-                print(f"Erro: Funcionário {emp_id} não encontrado.")
-            else:
-                internal_date = convert_date(date)
-                if internal_date not in employees[emp_id]["shifts"]:
-                    print(f"Erro: Nenhum turno encontrado para {date}.")
-                else:
-                    try:
-                        hours = calculate_hours(start, end)
-                        if hours <= 0:
-                            print("Erro: Horário de fim deve ser após o início.")
-                        else:
-                            employees[emp_id]["shifts"][internal_date] = {"start": start, "end": end, "hours": hours}
-                            print(f"Turno atualizado para {employees[emp_id]['name']} em {date}: {start}-{end} ({hours} horas)")
-                    except:
-                        print("Erro: Formato de horário inválido (use HH:MM ou HHhMM, ex.: 9:00).")
-
-        elif parts[0] == "listar":
-            if not employees:
-                print("Nenhum funcionário registrado.")
-            else:
-                print("Funcionários:")
-                for emp_id, data in employees.items():
-                    print(f"- {emp_id}: {data['name']}")
-
-        elif parts[0] == "auto":
-            auto_log_shifts()
-
-        elif parts[0] == "sair":
-            save_data()
-            generate_weekly_report()
-            print("Dados salvos. Relatório gerado. Até logo!")
-            break
-
-        else:
-            print("Comando desconhecido. Digite 'ajuda' para assistência.")
-
-if __name__ == "__main__":
-    main()
+                            print
